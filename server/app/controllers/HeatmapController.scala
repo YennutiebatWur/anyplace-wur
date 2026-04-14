@@ -238,45 +238,6 @@ class HeatmapController @Inject()(cc: ControllerComponents,
   }
 
   /**
-   * We use AVG2 on level3 because we dont want to show the tiles (individual radio points)
-   *
-   * Called by crossfilter when on zoom level 21.
-   */
-  @deprecated("notInUse")
-  def floorWifiTimestampAVG3(): Action[AnyContent] = Action {
-    implicit request =>
-      def inner(request: Request[AnyContent]): Result = {
-        val anyReq = new OAuth2Request(request)
-        if (!anyReq.assertJsonBody()) return RESPONSE.BAD(RESPONSE.ERROR_JSON_PARSE)
-        val json = anyReq.getJsonBody()
-        LOG.D2("Heatmap: floorWifiTimestampAVG3: " + Utils.stripJsValueStr(json))
-        val checkRequirements = VALIDATE.checkRequirements(json,
-          SCHEMA.fFloor, SCHEMA.fBuid, SCHEMA.fTimestampX, SCHEMA.fTimestampY)
-        if (checkRequirements != null) return checkRequirements
-        val buid = (json \ SCHEMA.fBuid).as[String]
-        val floor = (json \ SCHEMA.fFloor).as[String]
-        if (!pds.db.floorHasFingerprints(buid, floor)) return RESPONSE.BAD_NO_FINGERPRINTS
-        val timestampX = (json \ SCHEMA.fTimestampX).as[String]
-        val timestampY = (json \ SCHEMA.fTimestampY).as[String]
-
-        try {
-          val radioPoints = pds.db.getRadioHeatmapByFloorTimestamp(buid, floor, timestampX, timestampY)
-          if (radioPoints == null) return RESPONSE.BAD_CANNOT_RETRIEVE_FINGERPRINTS_WIFI
-          val res: JsValue = Json.obj("radioPoints" -> radioPoints)
-          try {
-            RESPONSE.gzipJsonOk(res.toString)
-          } catch {
-            case ioe: IOException => return RESPONSE.OK(res, "Successfully retrieved radio points.")
-          }
-        } catch {
-          case e: DatasourceException => return RESPONSE.ERROR("floorWifiTimestampAVG3", e)
-        }
-      }
-
-      inner(request)
-  }
-
-  /**
    * Called by crossfilter when on maximum zoom level (22).
    * Called many times from clients, for each tile.
    */

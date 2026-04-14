@@ -43,16 +43,6 @@ Web clients:
 - viewer campus
 
 ---
-## [_deprecated](deprecated)
-Clients that won't be further developed.
-
-#### [_deprecated/windows-phone](deprecated/windows-phone)
-Legacy Windows client code.
-
-#### [_deprecated/ios](deprecated/ios)
-Legacy iOS client.
-
----
 TEAM
 ---
 - **Leader:** Christakis Achilleos

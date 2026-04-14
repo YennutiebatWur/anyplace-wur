@@ -26,7 +26,7 @@
  */
 
 var API = {};
-API.url = "protocol://server:port/path"  // UPDATE THIS
+API.url = "http://localhost:9000/api"  // UPDATE THIS
 
 API.VERSION = API.url + "/version";
 
@@ -145,7 +145,7 @@ API.Mapping.REGISTER_LOCAL_URL = API.url + "/user/register";
 API.Navigation.POIS_ROUTE = "/navigation/route";
 API.Navigation.POIS_ROUTE = API.url + API.Navigation.POIS_ROUTE;
 
-API.Other.GOOGLE_URL_SHORTNER_URL = "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDLSYNnIC93KfPnMYRL-7xI7yXjOhgulk8";
+API.Other.GOOGLE_URL_SHORTNER_URL = "https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyC5kBipKxCT-vhf0RLeYviqYc6qYVp2FjE";
 
 if (app == undefined) { LOG.F("api.js must be loaded after app.js in GruntFile)") }
 
@@ -340,17 +340,6 @@ app.factory('AnyplaceAPIService', ['$http', '$q', 'formDataObject', function ($h
 
     apiService.getHeatmapAcces = function (json_req) {
         return null;
-        // DEPRECATED
-        // return $http({
-        //     method: "POST",
-        //     url: AnyplaceAPI.Mapping.RADIO_HEATMAP_RSS_ACCES_URL,
-        //     data: json_req
-        // }).success(function (data, status) {
-        //     return data;
-        // }).error(function (data, status) {
-        //     return data;
-        // });
-
     };
 
     apiService.retrievePoisByBuilding = function (json_req) {

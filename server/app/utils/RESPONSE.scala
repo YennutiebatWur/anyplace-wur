@@ -129,8 +129,6 @@ object RESPONSE {
     def UNAUTHORIZED(msg: String): Result = CreateResultResponse(Response.UNAUTHORIZED_ACCESS, null, msg)
     def UNAUTHORIZED_USER : Result = UNAUTHORIZED("Unauthorized user.")
 
-    def DEPRECATED(msg: String): Result = BAD("Deprecated API endpoint: " + msg)
-
     def BAD_API(msg: String): Result = BAD(msg + "(API ERROR)")
     def BAD_PARSE_JSON : Result = BAD("Cannot parse json in body.")
 

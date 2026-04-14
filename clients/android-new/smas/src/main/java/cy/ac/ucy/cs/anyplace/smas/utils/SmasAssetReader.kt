@@ -31,9 +31,3 @@ class SmasAssetReader(ctx: Context) : AssetReader(ctx) {
     return getJsonDataFromAsset(ctx, "dummy_messages.json")
   }
 }
-
-@Deprecated("")
-data class TestMessages(
-        @SerializedName("messages")
-        val messagesList: List<ChatMsg>
-)

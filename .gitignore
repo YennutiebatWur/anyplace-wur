@@ -1,4 +1,24 @@
-target
+### Build outputs ###
+target/
+
+### Node ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### Environment & secrets ###
+.env
+.env.*
+!.env.example
+
+### Python ###this
+__pycache__/
+*.py[cod]
+*.pyo
+
+### Editor ###
+.vscode/
 
 ### Linux ###
 *~

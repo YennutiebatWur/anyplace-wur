@@ -202,69 +202,6 @@ class MapFloorplanController @Inject()(cc: ControllerComponents,
       inner(request)
   }
 
-  @deprecated("NotInUse")
-  def upload(): Action[AnyContent] = Action {
-    implicit request =>
-
-      def inner(request: Request[AnyContent]): Result = {
-        val anyReq = new OAuth2Request(request)
-        val body = anyReq.getMultipartFormData()
-        if (body == null) return RESPONSE.BAD("Invalid request type - Not Multipart.")
-        val floorplan = body.file("floorplan").get
-        if (floorplan == null) return RESPONSE.BAD("Cannot find the floorplan file in your request.")
-        val urlenc = body.asFormUrlEncoded
-        val json_str = urlenc("").head
-        if (json_str == null) return RESPONSE.BAD("Cannot find json in the request.")
-        var json: JsValue = null
-        try {
-          json = Json.parse(json_str)
-        } catch {
-          case e: IOException => return RESPONSE.BAD_PARSE_JSON
-        }
-        LOG.I("Floorplan Request[json]: " + json.toString)
-        LOG.I("Floorplan Request[floorplan]: " + floorplan.filename)
-        val requiredMissing = JsonUtils.hasProperties(json, SCHEMA.fBuid, SCHEMA.fFloorNumber, SCHEMA.fLatBottomLeft,
-          SCHEMA.fLonBottomLeft, SCHEMA.fLatTopRight, SCHEMA.fLonTopRight)
-        if (!requiredMissing.isEmpty) return RESPONSE.MISSING_FIELDS(requiredMissing)
-        val buid = (json \ SCHEMA.fBuid).as[String]
-        val floorNum = (json \ SCHEMA.fFloorNumber).as[String]
-        val bottom_left_lat = (json \ SCHEMA.fLatBottomLeft).as[String]
-        val bottom_left_lng = (json \ SCHEMA.fLonBottomLeft).as[String]
-        val top_right_lat = (json \ SCHEMA.fLatTopRight).as[String]
-        val top_right_lng = (json \ SCHEMA.fLonTopRight).as[String]
-        val fuid = Floor.getId(buid, floorNum)
-        try {
-          var storedFloor = pds.db.getFromKeyAsJson(SCHEMA.cFloorplans, SCHEMA.fFuid, fuid)
-          if (storedFloor == null) return RESPONSE.BAD_CANNOT_RETRIEVE_FLOOR
-          storedFloor = storedFloor.as[JsObject] + (SCHEMA.fLatBottomLeft -> JsString(bottom_left_lat))
-          storedFloor = storedFloor.as[JsObject] + (SCHEMA.fLonBottomLeft -> JsString(bottom_left_lng))
-          storedFloor = storedFloor.as[JsObject] + (SCHEMA.fLatTopRight -> JsString(top_right_lat))
-          storedFloor = storedFloor.as[JsObject] + (SCHEMA.fLonTopRight -> JsString(top_right_lng))
-          if (!pds.db.replaceJsonDocument(SCHEMA.cFloorplans, SCHEMA.fFuid, fuid, storedFloor.toString))
-            return RESPONSE.BAD("floorplan could not be updated in the database.")
-        } catch {
-          case _: DatasourceException => return RESPONSE.ERROR_INTERNAL("Error while reading from our backend service.")
-        }
-        var floor_file: File = null
-        try {
-          floor_file = tilerHelper.storeFloorPlanToServer(buid, floorNum, floorplan.ref.file)
-        } catch {
-          case e: AnyPlaceException => return RESPONSE.BAD("Cannot save floorplan on the server.")
-        }
-        val top_left_lat = top_right_lat
-        val top_left_lng = bottom_left_lng
-        try {
-          tilerHelper.tileImage(floor_file, top_left_lat, top_left_lng)
-        } catch {
-          case e: AnyPlaceException => return RESPONSE.BAD("Could not create floorplan tiles on the server.")
-        }
-        LOG.I("Successfully tiled: " + floor_file.toString)
-        return RESPONSE.OK("Successfully updated floorplan.")
-      }
-
-      inner(request)
-  }
-
   /**
    * After a floor was added, this endpoints:
    *    1. uploads a floorplan (filesystem)
